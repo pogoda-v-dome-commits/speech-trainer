@@ -1,6 +1,6 @@
 // Кэш оболочки приложения — сайт открывается и без интернета.
 // При изменении файлов увеличивайте версию, чтобы телефоны получили обновление.
-const CACHE = "govori-yasno-v1";
+const CACHE = "govori-yasno-v2";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./icon-512-maskable.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {
