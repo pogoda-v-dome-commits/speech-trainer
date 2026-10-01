@@ -1,0 +1,4 @@
+node_modules/
+ai-worker/dist/
+ai-worker/.wrangler/
+ai-worker/.dev.vars

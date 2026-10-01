@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тренажёр речи</title>
+<meta name="description" content="Тренажёр устной речи: случайная тема, время на подготовку и выступление, анализ слов-паразитов, темпа и структуры.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3a5bd9">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Говори.ясно">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f4ef; --surface:#ffffff; --surface-2:#efece5; --text:#1d1b18; --muted:#6d685f;
+  --line:#e2ddd3; --accent:#3a5bd9; --accent-soft:#e6ebfc; --good:#1f8a4c; --good-soft:#e2f4e9;
+  --warn:#b8690d; --warn-soft:#fcefdc; --bad:#c23a32; --bad-soft:#fbe4e2;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121316; --surface:#1b1d22; --surface-2:#24272e; --text:#ecebe8; --muted:#9a978f;
+    --line:#2e3139; --accent:#7d97ff; --accent-soft:#232b48; --good:#4cc27e; --good-soft:#18301f;
+    --warn:#e7a54a; --warn-soft:#352816; --bad:#f07068; --bad-soft:#3a1c1a;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121316; --surface:#1b1d22; --surface-2:#24272e; --text:#ecebe8; --muted:#9a978f;
+  --line:#2e3139; --accent:#7d97ff; --accent-soft:#232b48; --good:#4cc27e; --good-soft:#18301f;
+  --warn:#e7a54a; --warn-soft:#352816; --bad:#f07068; --bad-soft:#3a1c1a;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:Manrope,system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px 64px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}
+.brand{font-weight:800;font-size:20px;letter-spacing:-.02em}
+.brand span{color:var(--accent)}
+.link-btn{background:none;border:none;color:var(--muted);font:inherit;font-size:14px;cursor:pointer;padding:6px 8px;border-radius:8px}
+.link-btn:hover{color:var(--text);background:var(--surface-2)}
+h1{font-size:clamp(28px,6vw,40px);line-height:1.1;letter-spacing:-.03em;margin:0 0 12px}
+.lead{color:var(--muted);font-size:17px;margin:0 0 28px;max-width:560px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+@media (max-width:560px){.modes{grid-template-columns:1fr}}
+.mode{text-align:left;cursor:pointer;font:inherit;color:inherit;transition:transform .15s,border-color .15s}
+.mode:hover{transform:translateY(-2px);border-color:var(--accent)}
+.mode h3{margin:0 0 6px;font-size:20px}
+.mode p{margin:0 0 14px;color:var(--muted);font-size:14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:13px;font-weight:600;background:var(--surface-2);padding:4px 10px;border-radius:99px}
+.chip.accent{background:var(--accent-soft);color:var(--accent)}
+.note{font-size:14px;color:var(--muted);padding:12px 14px;border-radius:12px;background:var(--surface-2)}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.btn{font:inherit;font-weight:700;font-size:16px;border:none;border-radius:12px;padding:14px 22px;cursor:pointer;background:var(--accent);color:#fff;transition:filter .15s}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:var(--surface-2);color:var(--text)}
+.btn.danger{background:var(--bad)}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.phase-label{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.topic{font-size:clamp(22px,4.6vw,30px);font-weight:700;line-height:1.25;letter-spacing:-.02em;margin:0 0 18px}
+.timer{font-variant-numeric:tabular-nums;font-size:clamp(56px,14vw,88px);font-weight:800;letter-spacing:-.04em;line-height:1;margin:6px 0 4px}
+.timer.low{color:var(--bad)}
+.bar{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin:14px 0 20px}
+.bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s linear}
+.plan{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}
+@media (max-width:560px){.plan{grid-template-columns:1fr 1fr}}
+.plan div{background:var(--surface-2);border-radius:12px;padding:10px 12px;font-size:13px}
+.plan b{display:block;font-size:14px;margin-bottom:2px}
+textarea{width:100%;min-height:110px;font:inherit;font-size:15px;color:var(--text);background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px;resize:vertical}
+textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.live{min-height:120px;max-height:260px;overflow:auto;background:var(--surface-2);border-radius:12px;padding:14px;font-size:16px;margin:16px 0}
+.live .interim{color:var(--muted)}
+.rec-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--bad);margin-right:8px;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}
+@media (max-width:560px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:var(--surface-2);border-radius:14px;padding:14px}
+.stat .v{font-size:28px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.stat .l{font-size:13px;color:var(--muted)}
+.stat.good .v{color:var(--good)} .stat.warn .v{color:var(--warn)} .stat.bad .v{color:var(--bad)}
+.score{display:flex;align-items:center;gap:18px;margin-bottom:8px}
+.score .num{font-size:64px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.score .cap{color:var(--muted)}
+h2{font-size:20px;margin:28px 0 12px;letter-spacing:-.01em}
+.tips{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.tips li{padding:12px 14px;border-radius:12px;background:var(--surface-2);font-size:15px}
+.tips li.good{background:var(--good-soft)} .tips li.warn{background:var(--warn-soft)} .tips li.bad{background:var(--bad-soft)}
+.tips li b{display:block;margin-bottom:2px}
+.transcript{font-size:16px;line-height:1.7;background:var(--surface-2);border-radius:12px;padding:14px}
+mark.filler{background:var(--bad-soft);color:var(--bad);border-radius:4px;padding:0 3px;font-weight:600}
+mark.rep{background:var(--warn-soft);color:var(--warn);border-radius:4px;padding:0 3px}
+.fill-list{display:flex;flex-wrap:wrap;gap:8px}
+.fill-list span{background:var(--bad-soft);color:var(--bad);padding:4px 10px;border-radius:99px;font-size:14px;font-weight:600}
+.struct{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:560px){.struct{grid-template-columns:1fr 1fr}}
+.struct div{border-radius:12px;padding:10px 12px;font-size:14px;background:var(--bad-soft)}
+.struct div.ok{background:var(--good-soft)}
+.struct small{display:block;color:var(--muted);font-size:12px}
+.history{display:grid;gap:8px}
+.h-item{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.h-item .s{font-size:22px;font-weight:800;text-align:center}
+.h-item .t{font-size:14px;font-weight:600}
+.h-item .m{font-size:12px;color:var(--muted)}
+audio{width:100%;margin-top:4px}
+.ai-box{border:1px solid var(--accent);background:var(--accent-soft);border-radius:16px;padding:18px}
+.ai-box h3{margin:18px 0 8px;font-size:16px}
+.ai-box h3:first-child{margin-top:0}
+.ai-box p{margin:0}
+.ai-box ul{margin:0;padding-left:20px}
+.ai-box li{margin-bottom:6px}
+.ai-scores{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.ai-scores span{background:var(--surface);border-radius:99px;padding:4px 12px;font-size:14px;font-weight:600}
+.better{background:var(--surface);border-radius:12px;padding:14px;font-size:16px;line-height:1.65;white-space:pre-wrap}
+.fix{color:var(--good);font-weight:600}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+input[type=text]{font:inherit;font-size:15px;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.install{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-top:14px}
+.hidden{display:none!important}
+.mt{margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Говори<span>.</span>ясно</div>
+    <div class="row">
+      <button class="link-btn" id="historyBtn">История</button>
+      <button class="link-btn" id="themeBtn" aria-label="Сменить тему">◐</button>
+    </div>
+  </header>
+
+  <!-- Старт -->
+  <section id="start">
+    <h1>Тренажёр устной речи</h1>
+    <p class="lead">Случайная тема, время подумать и время сказать. После выступления — разбор: слова-паразиты, темп, структура и подсказки по формулировкам.</p>
+    <div class="modes">
+      <button class="card mode" data-mode="easy">
+        <h3>Простой</h3>
+        <p>Лёгкие повседневные и рабочие темы. Быстро собраться и чётко сказать.</p>
+        <div class="chips"><span class="chip accent">30 сек подготовка</span><span class="chip">1 мин речь</span></div>
+      </button>
+      <button class="card mode" data-mode="hard">
+        <h3>Сложный</h3>
+        <p>Глубокие темы: переговоры, аргументация, сложные объяснения.</p>
+        <div class="chips"><span class="chip accent">10 мин подготовка</span><span class="chip">2 мин речь</span></div>
+      </button>
+    </div>
+    <div id="supportNote" class="note"></div>
+    <div id="installBox" class="note install hidden">
+      <span id="installText">Установите тренажёр на телефон — он откроется как приложение.</span>
+      <button class="btn" id="installBtn" style="padding:10px 16px;font-size:14px">Установить</button>
+    </div>
+  </section>
+
+  <!-- Подготовка -->
+  <section id="prep" class="hidden">
+    <div class="card">
+      <div class="phase-label">Подготовка</div>
+      <p class="topic" id="prepTopic"></p>
+      <div class="timer" id="prepTimer">0:30</div>
+      <div class="bar"><i id="prepBar"></i></div>
+      <div class="plan">
+        <div><b>1. Тезис</b>Главная мысль одной фразой</div>
+        <div><b>2. Причина</b>Почему это так</div>
+        <div><b>3. Пример</b>Случай, цифра, история</div>
+        <div><b>4. Вывод</b>Повторить мысль, призыв</div>
+      </div>
+      <textarea id="notes" placeholder="Заметки: тезис, 2–3 аргумента, пример…"></textarea>
+      <div class="row mt">
+        <button class="btn" id="goSpeak">Я готов(а) — говорить</button>
+        <button class="btn ghost" id="newTopic">Другая тема</button>
+        <button class="btn ghost" id="cancelPrep">Назад</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Выступление -->
+  <section id="speak" class="hidden">
+    <div class="card">
+      <div class="phase-label"><span class="rec-dot"></span>Говорите</div>
+      <p class="topic" id="speakTopic"></p>
+      <div class="timer" id="speakTimer">1:00</div>
+      <div class="bar"><i id="speakBar"></i></div>
+      <div id="liveWrap">
+        <div class="live" id="live"><span class="interim">Начните говорить — текст появится здесь…</span></div>
+      </div>
+      <div id="typeWrap" class="hidden">
+        <div class="note warn" style="margin-bottom:12px">Этот браузер не распознаёт речь. Говорите вслух и параллельно запишите сказанное как можно ближе к оригиналу — или откройте сайт в Chrome/Edge.</div>
+        <textarea id="typed" placeholder="То, что вы сказали…"></textarea>
+      </div>
+      <div class="row mt">
+        <button class="btn danger" id="stopSpeak">Закончить</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Результат -->
+  <section id="result" class="hidden">
+    <div class="card">
+      <div class="phase-label">Разбор выступления</div>
+      <p class="topic" id="resTopic" style="font-size:20px"></p>
+      <div class="score"><div class="num" id="resScore">0</div><div class="cap" id="resScoreCap"></div></div>
+      <div class="stats" id="resStats"></div>
+
+      <div id="audioWrap" class="hidden">
+        <h2>Послушайте себя</h2>
+        <audio id="audio" controls></audio>
+        <div class="row" style="margin-top:6px"><a class="link-btn" id="audioDl" download>Скачать запись</a></div>
+      </div>
+
+      <div id="aiWrap" class="hidden">
+        <h2>Разбор от ИИ</h2>
+        <div id="aiStart">
+          <p style="margin:0 0 12px;color:var(--muted)">ИИ-тренер прочитает вашу речь, скажет, что получилось, что улучшить, и покажет, как можно было сказать сильнее.</p>
+          <div class="row">
+            <input type="text" id="aiCode" placeholder="Код доступа" class="hidden" autocomplete="off">
+            <button class="btn" id="aiBtn">Получить разбор</button>
+          </div>
+        </div>
+        <div id="aiOut"></div>
+      </div>
+
+      <h2>Слова-паразиты</h2>
+      <div id="resFillers"></div>
+
+      <h2>Структура речи</h2>
+      <div class="struct" id="resStruct"></div>
+
+      <h2>Как сформулировать лучше</h2>
+      <ul class="tips" id="resTips"></ul>
+
+      <h2>Ваш текст</h2>
+      <div class="transcript" id="resText"></div>
+
+      <div class="row mt">
+        <button class="btn" id="again">Ещё тема</button>
+        <button class="btn ghost" id="toStart">Сменить режим</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- История -->
+  <section id="history" class="hidden">
+    <h1>История</h1>
+    <p class="lead" id="histLead"></p>
+    <div class="history" id="histList"></div>
+    <div class="row mt">
+      <button class="btn ghost" id="histBack">Назад</button>
+      <button class="link-btn" id="histClear">Очистить историю</button>
+    </div>
+  </section>
+</div>
+
+<script>
+// Адрес сервера ИИ-разбора (Cloudflare Worker из папки ai-worker). Пусто — кнопка ИИ скрыта.
+const AI_URL = "";
+
+// ---------- Темы ----------
+const TOPICS = {
+  easy: [
+    "Почему важно приходить на встречи вовремя?",
+    "Расскажите о своей работе так, чтобы понял ребёнок",
+    "Убедите коллегу перейти с почты на мессенджер для рабочих вопросов",
+    "Как вежливо отказать клиенту в скидке?",
+    "Лучший совет, который вы получили в карьере",
+    "Почему стоит читать хотя бы 20 минут в день?",
+    "Представьте себя на нетворкинге за одну минуту",
+    "Зачем записывать итоги каждой встречи?",
+    "Удалёнка или офис: что выбираете вы и почему?",
+    "Как начать разговор с незнакомым человеком на конференции?",
+    "Почему клиенту стоит выбрать именно вас?",
+    "Как вы планируете свой рабочий день?",
+    "Объясните, зачем нужен дедлайн",
+    "Ваше любимое приложение и почему его стоит попробовать",
+    "Как попросить коллегу о помощи, если он занят?",
+    "Почему важно уметь говорить «нет»?",
+    "Расскажите о проекте, которым вы гордитесь",
+    "Как подготовиться к собеседованию за один вечер?",
+    "Почему первое впечатление так важно в бизнесе?",
+    "Как вы справляетесь со стрессом перед важным разговором?",
+    "Убедите команду провести тимбилдинг",
+    "Чем хороший руководитель отличается от плохого?",
+    "Как правильно дать обратную связь коллеге?",
+    "Почему полезно иметь хобби вне работы?",
+    "Продайте мне эту ручку",
+    "Как вы выбираете, кому доверять в работе?",
+    "Что бы вы изменили в своём рабочем месте?",
+    "Почему голосовые сообщения раздражают людей и как с ними быть?",
+    "Как напомнить клиенту об оплате, не испортив отношения?",
+    "Опишите идеального делового партнёра",
+    "Какой навык вы хотите прокачать в этом году и зачем?",
+    "Как провести короткую и полезную планёрку?",
+    "Убедите друга начать заниматься спортом",
+    "Почему ошибки полезны для профессионального роста?",
+    "Как вы объясните клиенту задержку сроков?",
+    "Что делает презентацию интересной?",
+    "Поблагодарите команду за сложный квартал",
+    "Как вы отдыхаете, чтобы не выгорать?",
+    "Почему важно слушать, а не только говорить?",
+    "Расскажите о городе, в котором живёте, как о бренде",
+  ],
+  hard: [
+    "Клиент недоволен результатом и требует вернуть деньги. Как вы проведёте этот разговор?",
+    "Обоснуйте руководству необходимость повышения бюджета вашего отдела на 30%",
+    "Поставщик сорвал сроки третий раз. Проведите разговор, сохранив партнёрство",
+    "Объясните инвестору, почему ваш продукт будет нужен через 5 лет",
+    "Как искусственный интеллект изменит вашу профессию? Аргументируйте позицию",
+    "Сообщите команде о сокращении проекта так, чтобы сохранить мотивацию",
+    "Партнёр предлагает сделку, выгодную только ему. Как вы будете вести переговоры?",
+    "Почему компании теряют клиентов, даже имея хороший продукт?",
+    "Защитите непопулярное решение перед командой, которая с ним не согласна",
+    "Объясните разницу между ценой и ценностью на примере вашей услуги",
+    "Как выстроить доверие с новым клиентом, если у вас нет кейсов?",
+    "Нужна ли компании корпоративная культура? Аргументы за и против",
+    "Представьте, что вы обучаете нового сотрудника. Объясните ему главный процесс вашей работы",
+    "Как поступить, если ваш руководитель принял ошибочное решение?",
+    "Почему личный бренд важен даже для наёмного сотрудника?",
+    "Клиент сравнивает вас с конкурентом, который дешевле на 40%. Ваш ответ",
+    "Как вы будете убеждать человека, который заранее с вами не согласен?",
+    "Расскажите о своей самой большой профессиональной ошибке и выводах из неё",
+    "Объясните сложное понятие из вашей сферы человеку без подготовки",
+    "Как разрешить конфликт двух ценных сотрудников в команде?",
+    "Стоит ли бизнесу работать с клиентами, которые постоянно торгуются?",
+    "Предложите партнёру совместный проект и покажите выгоду для обеих сторон",
+    "Почему одни люди легко договариваются, а другие нет?",
+    "Как сообщить клиенту о повышении цен и не потерять его?",
+    "Что важнее для успеха компании: продукт, команда или маркетинг?",
+    "Выступите на совете директоров с предложением выйти на новый рынок",
+    "Как бы вы организовали работу отдела с нуля?",
+    "Объясните, почему качественная коммуникация экономит деньги компании",
+    "Откажите важному клиенту в нестандартной просьбе, сохранив лояльность",
+    "Как вести переговоры, когда у оппонента больше власти?",
+  ],
+};
+const MODES = {
+  easy: { prep: 30, speak: 60, name: "Простой" },
+  hard: { prep: 600, speak: 120, name: "Сложный" },
+};
+
+// ---------- Словари анализа ----------
+const FILLERS = [
+  "как бы","типа","короче","в общем","в общем-то","значит","так сказать","собственно","в принципе",
+  "по сути","это самое","как его","скажем так","блин","реально","конкретно","получается","чисто",
+  "прям","прямо вот","вот","ну","слушай","знаешь","понимаешь","вообще","то есть","кстати говоря",
+  "на самом деле","как говорится","допустим","э","ээ","эээ","эм","мм","ммм","ага","угу",
+];
+const STRUCTURE = {
+  intro: { name: "Вступление / тезис", hint: "«Я считаю, что…», «Моя главная мысль…»",
+    m: ["я считаю","я думаю","я уверен","я уверена","моя мысль","главная мысль","хочу рассказать","хочу сказать","речь пойдет","сегодня","предлагаю","по моему мнению","на мой взгляд","мое мнение","моя позиция","давайте разберемся","начну с"] },
+  reason: { name: "Аргументы", hint: "«Во-первых…», «потому что…»",
+    m: ["во первых","во вторых","в третьих","потому что","так как","поскольку","первое","второе","третье","причина","дело в том","благодаря","именно поэтому","ведь"] },
+  example: { name: "Пример", hint: "«Например…», «Представьте…»",
+    m: ["например","к примеру","представьте","приведу пример","случай","история","однажды","у меня был","у нас был","как в случае","цифры","процентов","по статистике"] },
+  outro: { name: "Вывод", hint: "«Итак…», «Таким образом…»",
+    m: ["итак","в итоге","таким образом","подводя итог","вывод","в заключение","резюмируя","поэтому","главное","предлагаю","давайте","призываю","получается что"] },
+};
+const STOP = new Set("это этот эта эти того тому что чтобы который которая которые когда если тоже также очень можно нужно надо будет было были быть есть всегда просто только может могут сейчас потом теперь тогда здесь там поэтому потому такой такая такие более менее самый самое своей свой свои наши наша нашей ваша ваши вашей нашим себя меня тебя тоже".split(" "));
+const REPLACE = {
+  "как бы": "уберите — фраза звучит увереннее без него",
+  "типа": "«например» или «вроде»",
+  "короче": "«если коротко», «итак»",
+  "в общем": "«в итоге», «подводя итог»",
+  "значит": "сделайте паузу вместо слова",
+  "получается": "«следовательно», «в результате»",
+  "по сути": "«главное здесь в том, что…»",
+  "на самом деле": "уберите — оно обесценивает сказанное ранее",
+  "реально": "«действительно», «на практике»",
+  "ну": "пауза. Просто начните с сути",
+  "вот": "пауза. Слово «вот» почти всегда лишнее",
+  "то есть": "«иными словами» — и только если правда перефразируете",
+  "в принципе": "уберите или скажите конкретнее",
+  "конкретно": "назовите саму конкретику: цифру, срок, имя",
+  "прям": "«очень», «действительно» — или ничего",
+};
+
+// ---------- Состояние ----------
+const $ = (id) => document.getElementById(id);
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let mode = "easy", topic = "", timerId = null, endAt = 0, total = 0, startedSpeak = 0;
+let rec = null, finalText = "", interimText = "", speaking = false, finishing = false;
+const lastTopics = [];
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+function show(id) {
+  for (const s of ["start", "prep", "speak", "result", "history"]) $(s).classList.toggle("hidden", s !== id);
+  window.scrollTo({ top: 0 });
+}
+const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.max(0, Math.floor(s % 60))).padStart(2, "0")}`;
+
+function pickTopic() {
+  const list = TOPICS[mode];
+  let t, tries = 0;
+  do { t = list[Math.floor(Math.random() * list.length)]; } while (lastTopics.includes(t) && ++tries < 30);
+  lastTopics.push(t); if (lastTopics.length > 10) lastTopics.shift();
+  return t;
+}
+
+function runTimer(seconds, timerEl, barEl, onEnd) {
+  clearInterval(timerId);
+  total = seconds; endAt = Date.now() + seconds * 1000;
+  const tick = () => {
+    const left = Math.max(0, (endAt - Date.now()) / 1000);
+    timerEl.textContent = fmt(Math.ceil(left));
+    timerEl.classList.toggle("low", left <= 10);
+    barEl.style.width = `${100 - (left / total) * 100}%`;
+    if (left <= 0) { clearInterval(timerId); onEnd(); }
+  };
+  tick(); timerId = setInterval(tick, 250);
+}
+
+// ---------- Подготовка ----------
+function startPrep() {
+  topic = pickTopic();
+  $("prepTopic").textContent = topic;
+  $("notes").value = "";
+  show("prep");
+  runTimer(MODES[mode].prep, $("prepTimer"), $("prepBar"), startSpeak);
+}
+
+// ---------- Выступление ----------
+function startSpeak() {
+  clearInterval(timerId);
+  $("speakTopic").textContent = topic;
+  finalText = ""; interimText = "";
+  $("live").innerHTML = '<span class="interim">Начните говорить — текст появится здесь…</span>';
+  $("typed").value = "";
+  $("liveWrap").classList.toggle("hidden", !SR);
+  $("typeWrap").classList.toggle("hidden", !!SR);
+  show("speak");
+  speaking = true;
+  startedSpeak = Date.now();
+  startRecording().finally(() => { if (SR && speaking) startRecognition(); });
+  runTimer(MODES[mode].speak, $("speakTimer"), $("speakBar"), finishSpeak);
+}
+
+// ---------- Запись голоса ----------
+let recorder = null, chunks = [], micStream = null, audioUrl = null;
+
+async function startRecording() {
+  chunks = [];
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return;
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recorder = new MediaRecorder(micStream);
+    recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+    recorder.start(1000);
+  } catch { recorder = null; stopMic(); }
+}
+
+function stopMic() {
+  if (micStream) micStream.getTracks().forEach((t) => t.stop());
+  micStream = null;
+}
+
+function stopRecording() {
+  return new Promise((resolve) => {
+    if (!recorder || recorder.state === "inactive") { stopMic(); return resolve(null); }
+    recorder.onstop = () => {
+      stopMic();
+      const blob = chunks.length ? new Blob(chunks, { type: recorder.mimeType || "audio/webm" }) : null;
+      recorder = null;
+      resolve(blob);
+    };
+    recorder.stop();
+  });
+}
+
+function startRecognition() {
+  rec = new SR();
+  rec.lang = "ru-RU";
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.onresult = (e) => {
+    interimText = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) finalText += r[0].transcript.trim() + " ";
+      else interimText += r[0].transcript;
+    }
+    const live = $("live");
+    live.innerHTML = "";
+    live.append(document.createTextNode(finalText));
+    if (interimText) { const s = document.createElement("span"); s.className = "interim"; s.textContent = interimText; live.append(s); }
+    live.scrollTop = live.scrollHeight;
+  };
+  rec.onerror = (e) => {
+    // На некоторых телефонах микрофон нельзя делить между записью и распознаванием —
+    // тогда жертвуем записью, а текст важнее
+    if (e.error === "audio-capture" && recorder) { stopRecording(); return; }
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+      speaking = false;
+      $("live").innerHTML = '<span class="interim">Нет доступа к микрофону. Разрешите его в настройках браузера и попробуйте снова.</span>';
+    }
+  };
+  // Chrome сам останавливает распознавание после паузы — перезапускаем
+  rec.onend = () => { if (speaking) try { rec.start(); } catch {} };
+  try { rec.start(); } catch {}
+}
+
+function finishSpeak() {
+  if ($("speak").classList.contains("hidden") || finishing) return;
+  finishing = true;
+  speaking = false;
+  clearInterval(timerId);
+  const seconds = Math.max(5, (Date.now() - startedSpeak) / 1000);
+  const recording = stopRecording();
+  const done = async () => {
+    const text = SR ? (finalText + " " + interimText).trim() : $("typed").value.trim();
+    const blob = await recording;
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    audioUrl = blob ? URL.createObjectURL(blob) : null;
+    lastAudioExt = blob && /mp4|aac/.test(blob.type) ? "m4a" : "webm";
+    renderResult(analyze(text, seconds));
+    finishing = false;
+  };
+  if (rec) { rec.onend = null; try { rec.stop(); } catch {} rec = null; setTimeout(done, 600); }
+  else done();
+}
+let lastAudioExt = "webm";
+
+// ---------- Анализ ----------
+const norm = (s) => s.toLowerCase().replace(/ё/g, "е").replace(/-/g, " ");
+const words = (s) => norm(s).match(/[а-яa-z0-9]+/g) || [];
+
+function analyze(text, seconds) {
+  const w = words(text);
+  const n = w.length;
+  const joined = " " + w.join(" ") + " ";
+  const wpm = Math.round(n / (seconds / 60));
+
+  // слова-паразиты (сначала длинные фразы, чтобы не считать дважды)
+  let rest = joined;
+  const fillers = {};
+  for (const f of [...FILLERS].sort((a, b) => b.length - a.length)) {
+    const key = " " + norm(f) + " ";
+    let c = 0, idx;
+    while ((idx = rest.indexOf(key)) !== -1) { c++; rest = rest.slice(0, idx) + " # " + rest.slice(idx + key.length); }
+    if (c) fillers[f] = c;
+  }
+  const fillerCount = Object.values(fillers).reduce((a, b) => a + b, 0);
+  const fillerRate = n ? (fillerCount / n) * 100 : 0;
+
+  // повторы
+  const freq = {};
+  for (const x of w) if (x.length >= 5 && !STOP.has(x)) freq[x] = (freq[x] || 0) + 1;
+  const reps = Object.entries(freq).filter(([, c]) => c >= 3).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  // структура
+  const struct = {};
+  for (const [k, s] of Object.entries(STRUCTURE)) struct[k] = s.m.some((m) => joined.includes(" " + norm(m) + " "));
+  const structScore = Object.values(struct).filter(Boolean).length;
+
+  // словарное разнообразие
+  const unique = new Set(w.filter((x) => x.length > 3)).size;
+  const longWords = w.filter((x) => x.length > 3).length;
+  const variety = longWords ? unique / longWords : 0;
+
+  // оценка
+  const expectedWords = (MODES[mode].speak / 60) * 115;
+  let score = 100;
+  if (wpm < 90) score -= Math.min(20, (90 - wpm) / 2);
+  if (wpm > 160) score -= Math.min(20, (wpm - 160) / 2);
+  score -= Math.min(30, fillerRate * 4);
+  score -= (4 - structScore) * 7;
+  score -= Math.min(10, reps.length * 3);
+  const fullness = Math.min(1, n / expectedWords);
+  if (fullness < 0.6) score -= (0.6 - fullness) * 40;
+  if (n < 10) score = Math.min(score, 15);
+  score = Math.max(0, Math.round(score));
+
+  return { text, n, seconds, wpm, fillers, fillerCount, fillerRate, reps, struct, structScore, variety, score, fullness };
+}
+
+// ---------- Результат ----------
+function renderResult(r) {
+  $("resTopic").textContent = topic;
+  $("resScore").textContent = r.score;
+  $("resScore").style.color = r.score >= 75 ? "var(--good)" : r.score >= 50 ? "var(--warn)" : "var(--bad)";
+  $("resScoreCap").innerHTML = `из 100<br>${r.score >= 85 ? "Отличное выступление" : r.score >= 70 ? "Хорошо, есть что подтянуть" : r.score >= 50 ? "Неплохо для тренировки" : "Попробуйте ещё раз — будет лучше"}`;
+
+  const tempoCls = r.wpm >= 100 && r.wpm <= 150 ? "good" : r.wpm >= 85 && r.wpm <= 165 ? "warn" : "bad";
+  const fillCls = r.fillerRate < 2 ? "good" : r.fillerRate < 5 ? "warn" : "bad";
+  $("resStats").innerHTML = `
+    <div class="stat ${tempoCls}"><div class="v">${r.wpm}</div><div class="l">слов в минуту</div></div>
+    <div class="stat ${fillCls}"><div class="v">${r.fillerCount}</div><div class="l">слов-паразитов</div></div>
+    <div class="stat"><div class="v">${r.n}</div><div class="l">слов всего</div></div>
+    <div class="stat ${r.structScore >= 3 ? "good" : r.structScore >= 2 ? "warn" : "bad"}"><div class="v">${r.structScore}/4</div><div class="l">частей структуры</div></div>`;
+
+  const fl = Object.entries(r.fillers).sort((a, b) => b[1] - a[1]);
+  $("resFillers").innerHTML = fl.length
+    ? `<div class="fill-list">${fl.map(([f, c]) => `<span>${f} × ${c}</span>`).join("")}</div>`
+    : `<div class="note">Паразитов не найдено — чистая речь.</div>`;
+
+  $("resStruct").innerHTML = Object.entries(STRUCTURE).map(([k, s]) =>
+    `<div class="${r.struct[k] ? "ok" : ""}">${r.struct[k] ? "✓" : "✗"} ${s.name}<small>${s.hint}</small></div>`).join("");
+
+  $("resTips").innerHTML = buildTips(r).map((t) => `<li class="${t.c}"><b>${t.h}</b>${t.b}</li>`).join("");
+  $("resText").innerHTML = r.text ? highlight(r.text, r) : '<span style="color:var(--muted)">Речь не распознана. Проверьте микрофон и говорите чуть громче.</span>';
+
+  $("audioWrap").classList.toggle("hidden", !audioUrl);
+  if (audioUrl) {
+    $("audio").src = audioUrl;
+    $("audioDl").href = audioUrl;
+    $("audioDl").download = `rech-${new Date().toISOString().slice(0, 10)}.${lastAudioExt}`;
+  }
+
+  lastResult = r;
+  $("aiWrap").classList.toggle("hidden", !AI_URL || r.n < 10);
+  $("aiStart").classList.remove("hidden");
+  $("aiOut").innerHTML = "";
+  $("aiBtn").disabled = false;
+  $("aiBtn").textContent = "Получить разбор";
+
+  const hist = store.get("history", []);
+  hist.unshift({ d: Date.now(), mode, topic, score: r.score, wpm: r.wpm, fillers: r.fillerCount, n: r.n });
+  store.set("history", hist.slice(0, 50));
+  show("result");
+}
+
+function buildTips(r) {
+  const tips = [];
+  if (r.n < 10) {
+    tips.push({ c: "bad", h: "Почти ничего не распознано", b: "Проверьте, что браузеру разрешён микрофон, и говорите ближе к нему." });
+    return tips;
+  }
+  if (r.wpm < 90) tips.push({ c: "warn", h: `Темп медленный — ${r.wpm} слов/мин`, b: "Комфортный темп деловой речи — 100–150 слов в минуту. Длинные паузы обычно означают поиск слов: заранее держите в голове 3 опорных пункта." });
+  else if (r.wpm > 160) tips.push({ c: "warn", h: `Темп быстрый — ${r.wpm} слов/мин`, b: "Слушателю сложно успевать. Делайте паузу после каждой ключевой мысли — она работает как точка в тексте." });
+  else tips.push({ c: "good", h: `Хороший темп — ${r.wpm} слов/мин`, b: "Вас комфортно слушать. Сохраняйте его и в волнительных ситуациях." });
+
+  if (r.fillerCount) {
+    const top = Object.entries(r.fillers).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const lines = top.map(([f]) => `«${f}» → ${REPLACE[f] || "замените паузой"}`).join("<br>");
+    tips.push({ c: r.fillerRate >= 5 ? "bad" : "warn", h: `Паразиты: ${r.fillerRate.toFixed(1)}% речи`, b: `Паразит — это звук, которым мы заполняем паузу. Пауза звучит увереннее любого «ну».<br>${lines}` });
+  }
+
+  if (!r.struct.intro) tips.push({ c: "warn", h: "Начните с главного", b: "Первая фраза — сразу ваш тезис: «Я считаю, что…», «Моё предложение — …». Так слушатель понимает, к чему вы ведёте." });
+  if (!r.struct.reason) tips.push({ c: "warn", h: "Добавьте аргументы", b: "Обоснуйте мысль: «Во-первых… во-вторых…», «потому что…». Два-три аргумента — оптимально." });
+  if (!r.struct.example) tips.push({ c: "warn", h: "Нужен пример", b: "Пример делает мысль живой: «Например, в прошлом месяце клиент…». Цифра или короткая история запоминаются лучше рассуждений." });
+  if (!r.struct.outro) tips.push({ c: "warn", h: "Завершите выводом", b: "Закройте речь: «Итак, …», «Поэтому предлагаю…». Без вывода выступление обрывается на полуслове." });
+  if (r.structScore === 4) tips.push({ c: "good", h: "Чёткая структура", b: "Тезис, аргументы, пример и вывод — всё на месте. Так строят речь сильные спикеры." });
+
+  if (r.reps.length) tips.push({ c: "warn", h: "Повторы слов", b: `Часто звучит: ${r.reps.map(([x, c]) => `«${x}» (${c})`).join(", ")}. Подберите синонимы или замените местоимением.` });
+  if (r.fullness < 0.6) tips.push({ c: "warn", h: "Речь получилась короткой", b: "Вы использовали мало времени. Добавьте ещё один аргумент или пример — это и есть «раскрыть тему»." });
+  if (r.variety > 0 && r.variety < 0.55 && r.n > 40) tips.push({ c: "warn", h: "Бедный словарь", b: "Много одинаковых слов. Попробуйте перед выступлением выписать 3–4 ключевых термина и синонимы к ним." });
+
+  tips.push({ c: "", h: "Шаблон на следующий раз", b: `«Я считаю, что [тезис]. Во-первых, [аргумент]. Во-вторых, [аргумент]. Например, [история или цифра]. Итак, [вывод или предложение].»` });
+  return tips;
+}
+
+function highlight(text, r) {
+  const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+  const repSet = new Set(r.reps.map(([x]) => x));
+  const tokens = text.split(/(\s+)/);
+  const out = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (/^\s+$/.test(t) || !t) { out.push(t); continue; }
+    // двухсловные паразиты
+    const next = tokens[i + 2];
+    const pair = next ? norm(t + " " + next).replace(/[^а-яa-z0-9 ]/g, "") : "";
+    if (pair && FILLERS.includes(pair) && r.fillers[pair]) { out.push(`<mark class="filler">${esc(t + tokens[i + 1] + next)}</mark>`); i += 2; continue; }
+    const w = norm(t).replace(/[^а-яa-z0-9]/g, "");
+    if (FILLERS.includes(w) && r.fillers[w]) out.push(`<mark class="filler">${esc(t)}</mark>`);
+    else if (repSet.has(w)) out.push(`<mark class="rep">${esc(t)}</mark>`);
+    else out.push(esc(t));
+  }
+  return out.join("");
+}
+
+// ---------- Разбор от ИИ ----------
+let lastResult = null;
+const escHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+async function askAI() {
+  const r = lastResult;
+  if (!r) return;
+  const btn = $("aiBtn");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>ИИ думает…';
+  $("aiOut").innerHTML = "";
+  const code = $("aiCode").value.trim() || store.get("aiCode", "");
+  try {
+    const res = await fetch(AI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic, mode, text: r.text, seconds: r.seconds, code, stats: { wpm: r.wpm, fillers: r.fillerCount, words: r.n } }),
+    });
+    const data = await res.json().catch(() => ({ error: "Сервер вернул неожиданный ответ" }));
+    if (res.status === 401) {
+      $("aiCode").classList.remove("hidden");
+      $("aiCode").focus();
+      throw new Error(code ? "Неверный код доступа" : "Введите код доступа");
+    }
+    if (!res.ok) throw new Error(data.error || `Ошибка ${res.status}`);
+    if (code) store.set("aiCode", code);
+    $("aiCode").classList.add("hidden");
+    $("aiStart").classList.add("hidden");
+    renderAI(data);
+  } catch (e) {
+    const msg = e instanceof TypeError ? "Нет связи с сервером ИИ. Проверьте интернет." : e.message;
+    $("aiOut").innerHTML = `<div class="note warn" style="margin-top:12px">${escHtml(msg)}</div>`;
+    btn.disabled = false;
+    btn.textContent = "Попробовать ещё раз";
+  }
+}
+
+function renderAI(d) {
+  const s = d.scores || {};
+  $("aiOut").innerHTML = `<div class="ai-box">
+    <p>${escHtml(d.summary || "")}</p>
+    <div class="ai-scores">
+      <span>Ясность ${s.clarity ?? "–"}/10</span><span>Структура ${s.structure ?? "–"}/10</span><span>Убедительность ${s.persuasiveness ?? "–"}/10</span>
+    </div>
+    <h3>Что получилось</h3>
+    <ul>${(d.strengths || []).map((x) => `<li>${escHtml(x)}</li>`).join("")}</ul>
+    <h3>Что улучшить</h3>
+    <ul>${(d.improvements || []).map((x) => `<li>${escHtml(x.issue)}<br><span class="fix">→ ${escHtml(x.fix)}</span></li>`).join("")}</ul>
+    <h3>Как можно было сказать</h3>
+    <div class="better">${escHtml(d.better_version || "")}</div>
+    <h3>Фразы-заготовки</h3>
+    <ul>${(d.phrases || []).map((x) => `<li>${escHtml(x)}</li>`).join("")}</ul>
+  </div>`;
+}
+
+// ---------- Установка на телефон ----------
+let installEvent = null;
+const isStandalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  installEvent = e;
+  $("installBox").classList.remove("hidden");
+});
+if (isIOS && !isStandalone) {
+  $("installBox").classList.remove("hidden");
+  $("installText").textContent = "Чтобы установить на iPhone: нажмите «Поделиться» внизу Safari → «На экран Домой».";
+  $("installBtn").classList.add("hidden");
+}
+$("installBtn").onclick = async () => {
+  if (!installEvent) return;
+  installEvent.prompt();
+  await installEvent.userChoice;
+  installEvent = null;
+  $("installBox").classList.add("hidden");
+};
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js").catch(() => {});
+
+// ---------- История ----------
+function renderHistory() {
+  const h = store.get("history", []);
+  if (!h.length) {
+    $("histLead").textContent = "Пока пусто — пройдите первую тренировку.";
+    $("histList").innerHTML = "";
+  } else {
+    const avg = Math.round(h.reduce((a, x) => a + x.score, 0) / h.length);
+    const avgF = (h.reduce((a, x) => a + x.fillers, 0) / h.length).toFixed(1);
+    $("histLead").textContent = `Тренировок: ${h.length} · средняя оценка ${avg} · паразитов в среднем ${avgF}`;
+    $("histList").innerHTML = h.map((x) => `
+      <div class="h-item">
+        <div class="s" style="color:${x.score >= 75 ? "var(--good)" : x.score >= 50 ? "var(--warn)" : "var(--bad)"}">${x.score}</div>
+        <div><div class="t"></div><div class="m">${new Date(x.d).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · ${MODES[x.mode].name} · ${x.wpm} сл/мин · паразитов: ${x.fillers}</div></div>
+        <div></div>
+      </div>`).join("");
+    [...$("histList").querySelectorAll(".t")].forEach((el, i) => (el.textContent = h[i].topic));
+  }
+  show("history");
+}
+
+// ---------- События ----------
+document.querySelectorAll(".mode").forEach((b) => b.addEventListener("click", () => { mode = b.dataset.mode; startPrep(); }));
+$("goSpeak").onclick = startSpeak;
+$("newTopic").onclick = () => { topic = pickTopic(); $("prepTopic").textContent = topic; runTimer(MODES[mode].prep, $("prepTimer"), $("prepBar"), startSpeak); };
+$("cancelPrep").onclick = () => { clearInterval(timerId); show("start"); };
+$("stopSpeak").onclick = finishSpeak;
+$("aiBtn").onclick = askAI;
+$("again").onclick = startPrep;
+$("toStart").onclick = () => show("start");
+$("historyBtn").onclick = renderHistory;
+$("histBack").onclick = () => show("start");
+$("histClear").onclick = () => { if (confirm("Удалить всю историю тренировок?")) { store.set("history", []); renderHistory(); } };
+
+const savedTheme = store.get("theme", null);
+if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+$("themeBtn").onclick = () => {
+  const dark = document.documentElement.dataset.theme
+    ? document.documentElement.dataset.theme === "dark"
+    : matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.dataset.theme = dark ? "light" : "dark";
+  store.set("theme", document.documentElement.dataset.theme);
+};
+
+$("supportNote").innerHTML = SR
+  ? "🎙 Нужен микрофон — браузер попросит разрешение. Речь распознаётся прямо в браузере, лучше всего в Chrome или Edge."
+  : "⚠️ Этот браузер не умеет распознавать речь. Откройте сайт в Chrome или Edge — или вводите сказанное текстом.";
+if (!SR) $("supportNote").classList.add("warn");
+</script>
+</body>
+</html>
